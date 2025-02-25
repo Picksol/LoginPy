@@ -39,8 +39,7 @@ if (BoolLog):
         with open('./PW.txt', 'a') as file: 
             file.write(PasswordInput)
 else:
-    if(Duplicate and CorrectPass): 
-        print(f"Welcome, {UsernameInput}!")
+    if(Duplicate and CorrectPass): print(f"Welcome, {UsernameInput}!")
     elif(not Duplicate or not CorrectPass): 
         print("Your username/password is incorrect. Please try again")
         CredentialAsk()
