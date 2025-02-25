@@ -1,9 +1,4 @@
-BoolLog = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R'
-print(BoolLog)
-UsernameInput = ""
-PasswordInput = ""
-Duplicate = False
-CorrectPass = False
+BoolLog, UsernameInput,  PasswordInput, Duplicate, CorrectPass = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R', "", "", False, False
 def CredentialAsk():
     global UsernameInput
     global PasswordInput
@@ -15,7 +10,6 @@ def CredentialAsk():
     while(8 < len(PasswordInput) > 20 or PasswordInput.__contains__(" ") or not any(not c.isalnum() for c in PasswordInput) or not any(c.isnumeric() for c in PasswordInput) or not (not c.isupper() for c in PasswordInput) or not (not c.islower() for c in PasswordInput)):
             print("Password must be 8-20 characters, no spaces, with 1 upper character, lower character, digit, and special character")
             PasswordInput = input("Enter your password: ").lower()
-def CredentialCheck():
     global Duplicate
     global CorrectPass
     with open('./UN.txt', 'r') as file: 
@@ -26,21 +20,18 @@ def CredentialCheck():
         Duplicate = UsernameInput == usernames[x]
         CorrectPass = PasswordInput == passwords[x]
 CredentialAsk()
-CredentialCheck()
 if (BoolLog):
     if(Duplicate): 
         print("This username is taken")
         CredentialAsk()
-        CredentialCheck()
     else: 
         print(f"Welcome, {UsernameInput}!")
         with open('./UN.txt', 'a') as file: 
-            file.write(UsernameInput)
+            file.write(UsernameInput + "\n")
         with open('./PW.txt', 'a') as file: 
-            file.write(PasswordInput)
+            file.write(PasswordInput + "\n")
 else:
     if(Duplicate and CorrectPass): print(f"Welcome, {UsernameInput}!")
     elif(not Duplicate or not CorrectPass): 
         print("Your username/password is incorrect. Please try again")
         CredentialAsk()
-        CredentialCheck()
