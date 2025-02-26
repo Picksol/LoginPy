@@ -1,4 +1,5 @@
-BoolLog, UsernameInput,  PasswordInput, Duplicate, CorrectPass = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R', "", "", False, False
+import csv
+BoolLog, UsernameInput,  PasswordInput, Duplicate, CorrectPass, Row = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R', "", "", False, False, 0
 def CredentialAsk():
     global UsernameInput
     global PasswordInput
@@ -12,13 +13,20 @@ def CredentialAsk():
             PasswordInput = input("Enter your password: ").lower()
     global Duplicate
     global CorrectPass
-    with open('./UN.txt', 'r') as file: 
-        usernames = [line.strip() for line in file]
-    with open('./PW.txt', 'r') as file: 
-        passwords = [line.strip() for line in file]
+    with open('./Credentials.csv', 'r') as file:
+        csv_reader = csv.reader(file)
+        rows = [row for row in csv_reader]
+        usernames = [row[0] for row in rows]
+        passwords = [row[1] for row in rows]
     for x in range(0, len(usernames)):
         Duplicate = UsernameInput == usernames[x]
         CorrectPass = PasswordInput == passwords[x]
+def ChangePassword():
+    global Row
+    if input("Do you want to change your password? [Y/N]").upper().strip() == 'Y':
+        
+    else:
+        pass
 CredentialAsk()
 if (BoolLog):
     if(Duplicate): 
@@ -26,12 +34,11 @@ if (BoolLog):
         CredentialAsk()
     else: 
         print(f"Welcome, {UsernameInput}!")
-        with open('./UN.txt', 'a') as file: 
-            file.write(UsernameInput + "\n")
-        with open('./PW.txt', 'a') as file: 
-            file.write(PasswordInput + "\n")
+        with open('./Credentials.csv', 'a') as file:
+            file.write(f"\n{UsernameInput},{PasswordInput}")
 else:
     if(Duplicate and CorrectPass): print(f"Welcome, {UsernameInput}!")
     elif(not Duplicate or not CorrectPass): 
         print("Your username/password is incorrect. Please try again")
         CredentialAsk()
+ChangePassword()
