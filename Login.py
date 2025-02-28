@@ -4,7 +4,7 @@ def CredentialAsk():
     global UsernameInput, PasswordInput, Duplicate, CorrectPass, Row
     Username()
     Password()
-    if BoolLog: Password(PasswordInput, False)
+    if BoolLog: Password(PasswordInput)
     with open('./Credentials.csv', 'r') as file:
         csv_reader = csv.reader(file)
         rows = [row for row in csv_reader]
@@ -37,7 +37,7 @@ def Password(oldpassword, changing = False):
         PasswordInput = input("Enter your password: ").lower()
     if changing:
         if PasswordInput != oldpassword: 
-            print("Can't use the same passowrd")
+            print("Can't use your old passowrd")
             Password()
     elif(BoolLog):
         if PasswordInput == oldpassword: 
