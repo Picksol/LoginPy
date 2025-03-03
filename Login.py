@@ -41,23 +41,23 @@ def ChangePassword():
     global Row, UsernameInput, PasswordInput
     if input("Do you want to change your password? [Y/N]").upper().strip() == 'Y':
         while True:
-            old_password_entered = input("Enter your existing password: ")
-            stored_old_password = None
+            OldPassword = input("Enter your existing password: ")
+            StoredPassword = None
             with open('./Credentials.csv', 'r') as file:
                 csv_reader = csv.reader(file)
                 for row in csv_reader:
                     if row and row[0] == UsernameInput:
-                        stored_old_password = row[1]
+                        StoredPassword = row[1]
                         break
-            if stored_old_password is None:
+            if StoredPassword is None:
                 print("User not found. Cannot change password.")
                 return
-            if old_password_entered == stored_old_password: break
+            if OldPassword == StoredPassword: break
             else: print("Incorrect existing password. Please try again.")
         while True:
-            Password('change', stored_old_password)
-            new_password_confirm = input("Confirm your new password: ")
-            if PasswordInput == new_password_confirm:
+            Password('change', StoredPassword)
+            NewPassword = input("Confirm your new password: ")
+            if PasswordInput == NewPassword:
                 if PassHistory(UsernameInput, PasswordInput):
                     print("Cannot use an old password. Please choose a new one.")
                     continue
@@ -72,11 +72,11 @@ def ChangePassword():
             csv_writer = csv.writer(file)
             for r_index, row in enumerate(rows):
                 if row and row[0] == UsernameInput:
-                    old_password_to_record = rows[r_index][1]
+                    RecordedPassword = rows[r_index][1]
                     rows[r_index][1] = PasswordInput
                     with open('./PasswordHistory.csv', 'a', newline='') as history_file:
                         csv_writer_history = csv.writer(history_file)
-                        csv_writer_history.writerow([UsernameInput, old_password_to_record])
+                        csv_writer_history.writerow([UsernameInput, RecordedPassword])
                     break
             csv_writer.writerows(rows)
         print("Password changed successfully!")
