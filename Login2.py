@@ -1,8 +1,7 @@
-import csv, re
+import csv
 def PassHistory(username, new_password):
     try:
-        with open('./PasswordHistory.csv', 'r') as f:
-            return any(row[0] == username and row[1] == new_password for row in csv.reader(f) if row)
+        with open('./PasswordHistory.csv', 'r') as f: return any(row[0] == username and row[1] == new_password for row in csv.reader(f) if row)
     except FileNotFoundError: return False
 def CredentialAsk():
     global UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, BoolLog
@@ -39,8 +38,7 @@ def ChangePassword():
     if input("Change password? [Y/N] ").upper().strip() == 'Y':
         while True:
             old_password_input = input("Enter old password: ")
-            with open('./Credentials.csv', 'r') as f:
-                StoredPassword = next((row[1] for row in csv.reader(f) if row and row[0] == UsernameInput), None)
+            with open('./Credentials.csv', 'r') as f: StoredPassword = next((row[1] for row in csv.reader(f) if row and row[0] == UsernameInput), None)
             if StoredPassword is None:
                 print("User not found.")
                 return
@@ -50,8 +48,7 @@ def ChangePassword():
             Password('change', StoredPassword)
             new_password_confirm = input("Confirm new password: ")
             if PasswordInput == new_password_confirm:
-                if PassHistory(UsernameInput, PasswordInput):
-                    print("Cannot use old password.")
+                if PassHistory(UsernameInput, PasswordInput): print("Cannot use old password.")
                 else: break
             else: print("Passwords mismatch.")
         with open('./Credentials.csv', 'r') as f: rows = list(csv.reader(f))
@@ -61,8 +58,7 @@ def ChangePassword():
                 if row and row[0] == UsernameInput:
                     RecordedPassword = row[1]
                     row[1] = PasswordInput
-                    with open('./PasswordHistory.csv', 'a', newline='') as history_file:
-                        csv.writer(history_file).writerow([UsernameInput, RecordedPassword])
+                    with open('./PasswordHistory.csv', 'a', newline='') as history_file: csv.writer(history_file).writerow([UsernameInput, RecordedPassword])
                 writer.writerow(row)
         print("Password changed!")
     else: exit("Logging out...")
@@ -72,8 +68,8 @@ def Username():
         UsernameInput = input("Enter username: ")
         if UsernameInput.isalnum() and 5 <= len(UsernameInput) <= 20: break
         print("Username must be 5-20 chars, alphanumeric only.")
-BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row = input('Login [L] or Register [R]? ').upper().strip() == 'R', "", "", False, False, 0
-while True:
+BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, LoginAttempts = input('Login [L] or Register [R]? ').upper().strip() == 'R', "", "", False, False, 0, 5
+while LoginAttempts>0:
     CredentialAsk()
     if BoolLog:
         if Duplicate: print("Username taken")
@@ -84,5 +80,7 @@ while True:
     elif Duplicate and CorrectPass:
         print(f"Welcome, {UsernameInput}!")
         break
-    else: print("Incorrect username/password.")
+    else:
+        LoginAttempts -= 1
+        print(f"Incorrect username/password. You have {LoginAttempts} left")
 ChangePassword()
