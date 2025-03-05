@@ -1,0 +1,8 @@
+These are some resources I used while at home to finish my program:
+https://realpython.com/any-python/
+
+https://www.pythonlikeyoumeanit.com/Module2_EssentialsOfPython/Generators_and_Comprehensions.html#generator-expressions 
+- specifically for '(row[0] == username and row[1] == new_password for row in csv.reader(f) if row)' 
+this was really cool to learn, forgot the OG tutorial I watched. I still want to learn a lot more about this though
+
+There are some others, specifically for file stuff but I lost the links, my bad

@@ -1,4 +1,4 @@
-import csv, re
+import csv
 BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R', "", "", False, False, 0
 def PassHistory(username, new_password):
     try:
