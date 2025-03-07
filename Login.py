@@ -1,5 +1,5 @@
 import csv
-BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R', "", "", False, False, 0
+BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, LoginAttempts = input('Do you want to [L]ogin or [R]egister? ').upper().strip() == 'R', "", "", False, False, 0, 5
 def PassHistory(username, new_password):
     try:
         with open('./PasswordHistory.csv', 'r') as history_file:
@@ -87,7 +87,7 @@ def Username():
     while (not UsernameInput.isalnum() or 5 > len(UsernameInput) or len(UsernameInput) > 20):
         print("Username must be 5-20 characters, no spaces")
         UsernameInput = input("Enter your username: ")
-while True:
+while LoginAttempts>0:
     CredentialAsk()
     if (BoolLog):
         if (Duplicate): print("This username is taken")
@@ -100,5 +100,7 @@ while True:
         if (Duplicate and CorrectPass):
             print(f"Welcome, {UsernameInput}!")
             break
-        elif (not Duplicate or not CorrectPass): print("Your username/password is incorrect. Please try again")
+        elif (not Duplicate or not CorrectPass):
+            LoginAttempts-=1
+            print(f"Your username/password is incorrect. You have {LoginAttempts} attempts left")
 ChangePassword()
