@@ -1,8 +1,7 @@
 import csv, argon2, string, random
-Type = argon2.Type
 def PassHistory(username, new_password):
     try: 
-        with open('./PasswordHistory.csv', 'r') as f: return any(row[0] == username and Var.verify(row[1], new_password) for row in csv.reader(f, delimiter=';') if row)
+        with open('./PasswordHistory.csv', 'r') as f: return any(row[0] == username and VeryBerry(row[1], new_password) for row in csv.reader(f, delimiter=';') if row)
     except FileNotFoundError: return False
 def CredentialAsk():
     global UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, BoolLog
@@ -18,8 +17,7 @@ def CredentialAsk():
         rows = list(csv.reader(f, delimiter=';'))
         for Row, row in enumerate(rows):
             if row and row[0] == UsernameInput:
-                Duplicate, CorrectPass = True, Var.verify(row[1], PasswordInput)
-                # Duplicate, CorrectPass = True, row[1] == PasswordInput
+                Duplicate, CorrectPass = True, VeryBerry(row[1], PasswordInput)
                 return
         Duplicate, CorrectPass = False, False
 def Password(mode, oldpassword=None):
@@ -34,7 +32,11 @@ def Password(mode, oldpassword=None):
                 print("Cannot reuse old password")
                 continue
         break
-def Random5(length=5): return ''.join(random.choice(string.ascii_letters) for _ in range(length))
+def VeryBerry(Par1, Par2NotGolf):
+    try: Var.verify(Par1, Par2NotGolf)
+    except: return False
+    return True
+def Random5(length=8): return (''.join(random.choice(string.ascii_letters) for _ in range(length))).encode('utf-8')
 def ChangePassword():
     global UsernameInput, PasswordInput
     if input("Change password? [Y/N] ").upper().strip() == 'Y':
@@ -44,8 +46,10 @@ def ChangePassword():
             if StoredPassword is None:
                 print("User not found.")
                 return
-            if Var.verify(StoredPassword, old_password_input): break
-            print("Incorrect old password.")
+            try:
+                if VeryBerry(StoredPassword, old_password_input): break
+            except:
+                print("Incorrect old password.")
         while True:
             Password('change', StoredPassword)
             new_password_confirm = input("Confirm new password: ")
@@ -59,7 +63,7 @@ def ChangePassword():
             for row in rows:
                 if row and row[0] == UsernameInput:
                     RecordedPassword = row[1]
-                    PasswordInput = Var.hash(PasswordInput)
+                    PasswordInput = Var.hash(PasswordInput, salt=(f'{Random5()}Love').encode('utf-8'))
                     row[1] = PasswordInput
                     with open('./PasswordHistory.csv', 'a', newline='') as history_file: csv.writer(history_file, delimiter=';').writerow([UsernameInput, RecordedPassword])
                 writer.writerow(row)
@@ -71,14 +75,15 @@ def Username():
         UsernameInput = input("Enter username: ")
         if UsernameInput.isalnum() and 5 <= len(UsernameInput) <= 20: break
         print("Username must be 5-20 chars, alphanumeric only.")
-BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, LoginAttempts, Var = input('Login [L] or Register [R]? ').upper().strip() == 'R', "", "", False, False, 0, 5, argon2.PasswordHasher(type=Type.ID)
+BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, LoginAttempts, Var = input('Login [L] or Register [R]? ').upper().strip() == 'R', "", "", False, False, 0, 5, argon2.PasswordHasher()
 while LoginAttempts>0:
     CredentialAsk()
     if BoolLog:
         if Duplicate: print("Username taken")
         else:
             print(f"Welcome, {UsernameInput}!")
-            with open('./Credentials.csv', 'a', newline='') as f: csv.writer(f, delimiter=';').writerow([UsernameInput, Var.hash(password=PasswordInput)])
+            print(Random5())
+            with open('./Credentials.csv', 'a', newline='') as f: csv.writer(f, delimiter=';').writerow([UsernameInput, Var.hash(password=PasswordInput, salt=(f'{Random5()}Love').encode('utf-8'))])
             break
     elif Duplicate and CorrectPass:
         print(f"Welcome, {UsernameInput}!")
@@ -86,4 +91,4 @@ while LoginAttempts>0:
     else:
         LoginAttempts -= 1
         print(f"Incorrect username/password. You have {LoginAttempts} left")
-ChangePassword()
+if LoginAttempts>0: ChangePassword()
