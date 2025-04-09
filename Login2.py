@@ -1,7 +1,7 @@
-import csv, argon2, string, random
+import argon2, string, random, pyodbc
 def PassHistory(username, new_password):
     try: 
-        with open('./PasswordHistory.csv', 'r') as f: return any(row[0] == username and VeryBerry(row[1], new_password) for row in csv.reader(f, delimiter=';') if row)
+        return any(row[0] == username and VeryBerry(row[1], new_password) for row in cur.execute('select * from PasswordHistory').fetchall() if row)
     except FileNotFoundError: return False
 def CredentialAsk():
     global UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, BoolLog
@@ -13,12 +13,10 @@ def CredentialAsk():
             if PasswordInput == PasswordInput_confirm: break
             print("Passwords mismatch.")
     else: Password('login')
-    with open('./Credentials.csv', 'r') as f:
-        rows = list(csv.reader(f, delimiter=';'))
-        for Row, row in enumerate(rows):
-            if row and row[0] == UsernameInput:
-                Duplicate, CorrectPass = True, VeryBerry(row[1], PasswordInput)
-                return
+    for row in cur.execute('select * from Credentials').fetchall():
+        if row and row[0] == UsernameInput:
+            Duplicate, CorrectPass = True, VeryBerry(row[1], PasswordInput)
+            return
         Duplicate, CorrectPass = False, False
 def Password(mode, oldpassword=None):
     global PasswordInput
@@ -36,13 +34,13 @@ def VeryBerry(Par1, Par2NotGolf):
     try: Var.verify(Par1, Par2NotGolf)
     except: return False
     return True
-def Random5(length=8): return (''.join(random.choice(string.ascii_letters) for _ in range(length))).encode('utf-8')
+def Random8(length=8): return (''.join(random.choice(string.ascii_letters) for _ in range(length))).encode('utf-8')
 def ChangePassword():
     global UsernameInput, PasswordInput
     if input("Change password? [Y/N] ").upper().strip() == 'Y':
         while True:
             old_password_input = input("Enter old password: ")
-            with open('./Credentials.csv', 'r') as f: StoredPassword = next((row[1] for row in csv.reader(f, delimiter=';') if row and row[0] == UsernameInput), None)
+            StoredPassword = next((row[1] for row in cur.execute('select * from Credentials').fetchall() if row and row[0] == UsernameInput), None)
             if StoredPassword is None:
                 print("User not found.")
                 return
@@ -57,16 +55,14 @@ def ChangePassword():
                 if PassHistory(UsernameInput, PasswordInput): print("Cannot use old password.")
                 else: break
             else: print("Passwords mismatch.")
-        with open('./Credentials.csv', 'r') as f: rows = list(csv.reader(f,delimiter=';'))
-        with open('./Credentials.csv', 'w', newline='') as f:
-            writer = csv.writer(f, delimiter=';')
-            for row in rows:
-                if row and row[0] == UsernameInput:
-                    RecordedPassword = row[1]
-                    PasswordInput = Var.hash(PasswordInput, salt=(f'{Random5()}Love').encode('utf-8'))
-                    row[1] = PasswordInput
-                    with open('./PasswordHistory.csv', 'a', newline='') as history_file: csv.writer(history_file, delimiter=';').writerow([UsernameInput, RecordedPassword])
-                writer.writerow(row)
+        for row in cur.execute('select * from Credentials').fetchall():
+            if row and row[0] == UsernameInput:
+                RecordedPassword = row[1]
+                PasswordInput = Var.hash(PasswordInput, salt=(f'{Random8()}Love').encode('utf-8'))
+                row[1] = PasswordInput
+                cur.execute("INSERT INTO PasswordHistory (Username, Password) VALUES (?,?)", (UsernameInput, RecordedPassword))
+            cur.execute("UPDATE Credentials SET Password=? WHERE Username=?", (PasswordInput, UsernameInput))
+            cur.commit()
         print("Password changed!")
     else: exit("Logging out...")
 def Username():
@@ -75,15 +71,15 @@ def Username():
         UsernameInput = input("Enter username: ")
         if UsernameInput.isalnum() and 5 <= len(UsernameInput) <= 20: break
         print("Username must be 5-20 chars, alphanumeric only.")
-BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, LoginAttempts, Var = input('Login [L] or Register [R]? ').upper().strip() == 'R', "", "", False, False, 0, 5, argon2.PasswordHasher()
+BoolLog, UsernameInput, PasswordInput, Duplicate, CorrectPass, Row, LoginAttempts, Var, cur = input('Login [L] or Register [R]? ').upper().strip() == 'R', "", "", False, False, 0, 5, argon2.PasswordHasher(), pyodbc.connect(r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};' r'DBQ=p:\Access\LoginPy2.accdb;' r'PWD=JacobHoover').cursor()
 while LoginAttempts>0:
     CredentialAsk()
     if BoolLog:
         if Duplicate: print("Username taken")
         else:
             print(f"Welcome, {UsernameInput}!")
-            print(Random5())
-            with open('./Credentials.csv', 'a', newline='') as f: csv.writer(f, delimiter=';').writerow([UsernameInput, Var.hash(password=PasswordInput, salt=(f'{Random5()}Love').encode('utf-8'))])
+            cur.execute("INSERT INTO Credentials (Username, Password) VALUES (?,?)", (UsernameInput, Var.hash(password=PasswordInput, salt=(f'{Random8()}Love').encode('utf-8'))))
+            cur.commit()
             break
     elif Duplicate and CorrectPass:
         print(f"Welcome, {UsernameInput}!")
